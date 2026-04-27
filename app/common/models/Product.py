@@ -2,6 +2,7 @@ from datetime import datetime
 import uuid
 
 from sqlalchemy import CHAR, JSON, UUID, Column, Float, ForeignKey, Integer, String, Boolean, DateTime, Text, func
+from sqlalchemy.orm import relationship
 from app.common.models.base import Base
 
 
@@ -38,6 +39,8 @@ class Product(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     deleted_at = Column(DateTime(timezone=True))
+    
+    stocks = relationship("ProductStock", back_populates="product")
     
     def __repr__(self):
         return f"<Product(name='{self.product_name}', expires='{self.expiration_date}')>"

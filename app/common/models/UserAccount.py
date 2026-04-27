@@ -14,7 +14,7 @@ class UserAccount(Base):
     
     # 2. Security & Authentication
     # Stockez TOUJOURS le hash du mot de passe, jamais le texte brut !
-    hashed_password = Column(String(255), nullable=False)
+    hashed_password = Column(Text, nullable=False)
     is_active = Column(Boolean, default=True, server_default="true")
     is_superuser = Column(Boolean, default=False, server_default="false")
     

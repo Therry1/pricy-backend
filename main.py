@@ -6,52 +6,40 @@ sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8')
 from contextlib import asynccontextmanager
 import httpx
 import redis.asyncio as redis
-from sqlalchemy import create_engine, text
-from sqlalchemy.orm import sessionmaker
 from fastapi import FastAPI
 from app.common.configs.settings import settings
+from app.common.configs.database import engine, SessionLocal
 from app.services.service_test.router import router as service_test_router
-from dotenv import load_dotenv
-load_dotenv(encoding="utf-8")
+from app.services.stock_manager.router import router as stock_manager_router
+from app.services.organization_manager.router import router as organization_manager_router
+from app.services.iam_manager.router import router as iam_manager_router
 
-# ── Variables globales accessibles partout dans l'app ──────────────────────
+
+
+# ── Variables globales ──────────────────────────────────────────────────────
 http_client: httpx.AsyncClient | None = None
 redis_client: redis.Redis | None = None
-engine = None
-SessionLocal = None
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    global http_client, redis_client
 
     # ═══════════════════════════════════════
     #              STARTUP
     # ═══════════════════════════════════════
-    global http_client, redis_client, engine, SessionLocal
 
     # 1. HTTP Client
     http_client = httpx.AsyncClient()
     print("✅ HTTP Client initialisé")
 
     # 2. Base de données
-    engine = create_engine(settings.DATABASE_URL)
-    SessionLocal = sessionmaker(bind=engine, autocommit=False, autoflush=False)
-    with engine.connect() as conn:
-        conn.execute(text("SELECT 1"))
-    print(f"✅ Base de données connectée : {settings.DB_DATABASE}")
+    async with engine.connect() as conn:
+        print(f"✅ Base de données connectée : {settings.DB_DATABASE}")
 
-    # 3. Redis
-    # redis_client = redis.Redis(
-    #     host=settings.REDIS_HOST,
-    #     port=settings.REDIS_PORT,
-    #     password=settings.REDIS_PASSWORD,
-    #     decode_responses=True
-    # )
-    # await redis_client.ping()
-    # print(f"✅ Redis connecté : {settings.REDIS_HOST}:{settings.REDIS_PORT}")
-
+    # 3. Redis (désactivé)
     print("⚠️ Redis désactivé")
-    
-    yield  # ← L'application tourne ici
+
+    yield
 
     # ═══════════════════════════════════════
     #              SHUTDOWN
@@ -62,12 +50,9 @@ async def lifespan(app: FastAPI):
     print("🛑 HTTP Client fermé")
 
     # 2. Base de données
-    engine.dispose()
+    await engine.dispose()  # ← await obligatoire en async
     print("🛑 Connexion base de données fermée")
 
-    # 3. Redis
-    # await redis_client.aclose()
-    # print("🛑 Redis fermé")
     print("⚠️ Redis désactivé")
 
 
@@ -78,3 +63,8 @@ app = FastAPI(
 )
 
 app.include_router(service_test_router, prefix='/api/v1')
+app.include_router(stock_manager_router, prefix='/api/v1')
+app.include_router(organization_manager_router, prefix='/api/v1')
+app.include_router(iam_manager_router, prefix='/api/v1')
+
+
