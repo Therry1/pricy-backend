@@ -3,7 +3,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from fastapi import HTTPException, status
-from passlib.context import CryptContext
 
 from app.common.models.UserAccount import UserAccount
 from app.services.iam_manager.helper import hash_password

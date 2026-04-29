@@ -1,12 +1,14 @@
 from logging.config import fileConfig
-from sqlalchemy import engine_from_config, pool
+from sqlalchemy import pool
 from alembic import context
 from sqlalchemy.ext.asyncio import create_async_engine
 import asyncio
+import selectors
 
-# ← imports obligatoires
 from app.common.configs.settings import settings
 from app.common.models.base import Base
+
+print(">>> DATABASE_URL utilisée :", settings.DATABASE_URL)
 
 config = context.config
 config.set_main_option("sqlalchemy.url", settings.DATABASE_URL)
@@ -29,20 +31,6 @@ def run_migrations_offline() -> None:
         context.run_migrations()
 
 
-# def run_migrations_online() -> None:
-#     connectable = engine_from_config(
-#         config.get_section(config.config_ini_section, {}),
-#         prefix="sqlalchemy.",
-#         poolclass=pool.NullPool,
-#     )
-#     with connectable.connect() as connection:
-#         context.configure(
-#             connection=connection,
-#             target_metadata=target_metadata
-#         )
-#         with context.begin_transaction():
-#             context.run_migrations()
-            
 def run_migrations_online() -> None:
     async def run_async_migrations() -> None:
         connectable = create_async_engine(settings.DATABASE_URL)
@@ -50,15 +38,21 @@ def run_migrations_online() -> None:
             await connection.run_sync(
                 lambda conn: context.configure(
                     connection=conn,
-                    target_metadata=target_metadata
+                    target_metadata=target_metadata,
+                    include_schemas=True,           # ✅ ajouté
+                    version_table_schema="public",  # ✅ ajouté
                 )
             )
-            await connection.run_sync(
-                lambda conn: context.run_migrations()
-            )
+            await connection.exec_driver_sql("SET search_path TO public")  # ✅ ajouté
+            await connection.run_sync(lambda conn: context.run_migrations())
+            await connection.commit()  # ✅ commit explicite
+
         await connectable.dispose()
 
-    asyncio.run(run_async_migrations())
+    asyncio.run(
+        run_async_migrations(),
+        loop_factory=lambda: asyncio.SelectorEventLoop(selectors.SelectSelector())
+    )
 
 
 if context.is_offline_mode():

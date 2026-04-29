@@ -16,6 +16,7 @@ class Settings(BaseSettings):
     DB_DATABASE: str
     DB_USERNAME: str
     DB_PASSWORD: str
+    DB_EXTRA_PARAMS: str = ""
 
     REDIS_HOST: str
     REDIS_PORT: int = 6379
@@ -27,14 +28,14 @@ class Settings(BaseSettings):
 
     @model_validator(mode="after")
     def build_database_url(self) -> "Settings":
-        # ✅ On construit l'URL seulement si elle n'est pas déjà définie
         if not self.DATABASE_URL:
-            self.DATABASE_URL = (
+            base = (
                 f"{self.DB_CONNECTION}://"
                 f"{self.DB_USERNAME}:{quote_plus(self.DB_PASSWORD)}"
                 f"@{self.DB_HOST}:{self.DB_PORT}"
                 f"/{self.DB_DATABASE}"
             )
+            self.DATABASE_URL = f"{base}?{self.DB_EXTRA_PARAMS}" if self.DB_EXTRA_PARAMS else base
         return self
 
 settings = Settings()
