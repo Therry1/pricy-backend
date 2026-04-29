@@ -1,5 +1,5 @@
 [project]
-name = "pricy-backend"
+name = ""
 version = "0.1.0"
 description = "depot de gestion d'entreprise"
 authors = [
@@ -25,8 +25,8 @@ dependencies = [
 
 
 [build-system]
-requires = ["poetry-core>=2.0.0,<3.0.0"]
-build-backend = "poetry.core.masonry.api"
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
 
 [dependency-groups]
 dev = [
