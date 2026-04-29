@@ -27,6 +27,12 @@ dependencies = [
 requires = ["setuptools", "wheel"]
 build-backend = "setuptools.build_meta"
 
+[tool.setuptools]
+packages = []
+
+[tool.setuptools.packages.find]
+where = []
+
 [dependency-groups]
 dev = [
     "mypy (>=1.20.2,<2.0.0)",
