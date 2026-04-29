@@ -2,10 +2,9 @@
 name = "pricy-backend"
 version = "0.1.0"
 description = "depot de gestion d'entreprise"
-authors = [
-    {name = "therrynganga5@gmail.com"}
-]
+authors = [{ name = "therrynganga5@gmail.com" }]
 requires-python = ">=3.10"
+
 dependencies = [
     "fastapi>=0.136.0,<0.137.0",
     "uvicorn[standard]>=0.46.0,<0.47.0",
@@ -24,15 +23,11 @@ dependencies = [
 ]
 
 [build-system]
-requires = ["setuptools", "wheel"]
+requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
-packages = []
-
-[tool.setuptools.packages.find]
-where = []
-
+packages = false
 [dependency-groups]
 dev = [
     "mypy (>=1.20.2,<2.0.0)",
