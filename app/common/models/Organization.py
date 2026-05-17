@@ -12,6 +12,7 @@ class Organization(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
     legal_name = Column(String(255), nullable=False)
     trade_name = Column(String(255))
+    alias = Column(String , unique=True, nullable=True)
     tax_id = Column(String(100), unique=True, index=True)
     registration_number = Column(String(100), unique=True)
     legal_form = Column(String(50))  # ex: SARL, SA, LLC

@@ -1,4 +1,5 @@
-"""Helpers du module iam_manager."""
+"""Helpers du module user_manager."""
+# helper.py
 from typing import Any, Type
 
 import bcrypt

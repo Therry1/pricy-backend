@@ -1,1 +1,1 @@
-"""Dépendances du module user_manager."""
+"""Dépendances du module iam_manager."""

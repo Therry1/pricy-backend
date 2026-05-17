@@ -1,28 +1,23 @@
-"""Router du module user_manager."""
-from fastapi import APIRouter, Depends
+"""Router du module iam_manager."""
+from fastapi import APIRouter, Depends, Query
+from uuid import UUID
 from starlette import status
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.common.configs.database import get_db
-from app.services.iam_manager.handler import create_user
-from app.services.iam_manager.schemas import UserCreateSchema, UserResponseSchema
+from app.services.authentification_manager.dependencies import get_current_user
+from app.services.iam_manager.handler import config_role, create_role
+from app.services.iam_manager.schemas import RoleConfigSchema, RoleCreateSchema, RoleResponseSchema
 
-router = APIRouter(prefix="/iam_manager", tags=["user_manager"])
+router = APIRouter(prefix="/iam_manager", tags=["iam_manager"])
 
-@router.post(
-    "/register",
-    response_model=UserResponseSchema,
-    status_code=status.HTTP_201_CREATED,
-    summary="Créer un nouveau compte utilisateur"
-)
-async def register_user_path(
-    payload: UserCreateSchema,
-    db: AsyncSession = Depends(get_db)
-):
-    """
-    Crée un nouvel utilisateur avec les informations fournies.
+@router.post('/role', response_model=RoleResponseSchema)
+async def create_role_path(payload: RoleCreateSchema , db : AsyncSession = Depends(get_db)):
+    return await create_role (db , payload)
 
-    - **username** : Nom d'utilisateur unique (3-50 caractères)
-    - **email** : Adresse email unique et valide
-    - **password** : Minimum 8 caractères, 1 majuscule, 1 chiffre, 1 caractère spécial
-    """
-    return await create_user(db=db, data=payload)
+@router.get('/roles')
+async def create_role_path(user_account_id = Depends(get_current_user)):
+    return user_account_id if user_account_id else "je suis la"
+
+@router.post('role/config' , response_model=RoleResponseSchema)
+async def config_role_path(payload : RoleConfigSchema , db : AsyncSession = Depends(get_db), user_account_id = Depends(get_current_user)):
+    return await config_role (db , payload)

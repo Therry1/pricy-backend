@@ -1,7 +1,6 @@
 from logging.config import fileConfig
-from sqlalchemy import pool
-from alembic import context
 from sqlalchemy.ext.asyncio import create_async_engine
+from alembic import context
 import asyncio
 import selectors
 
@@ -19,6 +18,13 @@ if config.config_file_name is not None:
 target_metadata = Base.metadata
 
 
+def include_object(object, name, type_, reflected, compare_to):
+    """Exclure les tables internes d'Alembic de l'autogenerate."""
+    if type_ == "table" and name == "alembic_version":
+        return False
+    return True
+
+
 def run_migrations_offline() -> None:
     url = config.get_main_option("sqlalchemy.url")
     context.configure(
@@ -26,6 +32,7 @@ def run_migrations_offline() -> None:
         target_metadata=target_metadata,
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
+        include_object=include_object,
     )
     with context.begin_transaction():
         context.run_migrations()
@@ -34,18 +41,22 @@ def run_migrations_offline() -> None:
 def run_migrations_online() -> None:
     async def run_async_migrations() -> None:
         connectable = create_async_engine(settings.DATABASE_URL)
+
         async with connectable.connect() as connection:
-            await connection.run_sync(
-                lambda conn: context.configure(
+            await connection.exec_driver_sql("SET search_path TO public")
+
+            def do_migrations(conn):
+                context.configure(
                     connection=conn,
                     target_metadata=target_metadata,
-                    include_schemas=True,           # ✅ ajouté
-                    version_table_schema="public",  # ✅ ajouté
+                    include_schemas=True,
+                    version_table_schema="public",
+                    include_object=include_object,
                 )
-            )
-            await connection.exec_driver_sql("SET search_path TO public")  # ✅ ajouté
-            await connection.run_sync(lambda conn: context.run_migrations())
-            await connection.commit()  # ✅ commit explicite
+                context.run_migrations()
+
+            await connection.run_sync(do_migrations)
+            await connection.commit()
 
         await connectable.dispose()
 

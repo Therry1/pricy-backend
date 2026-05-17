@@ -12,7 +12,12 @@ from app.common.configs.database import engine, SessionLocal
 from app.services.service_test.router import router as service_test_router
 from app.services.stock_manager.router import router as stock_manager_router
 from app.services.organization_manager.router import router as organization_manager_router
+from app.services.user_manager.router import router as user_manager_router
+from app.services.product_manager.router import router as product_manager_router
+from app.services.authentification_manager.router import router as authentification_manager_router
 from app.services.iam_manager.router import router as iam_manager_router
+
+
 
 
 
@@ -62,9 +67,13 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-app.include_router(service_test_router, prefix='/api/v1')
-app.include_router(stock_manager_router, prefix='/api/v1')
-app.include_router(organization_manager_router, prefix='/api/v1')
-app.include_router(iam_manager_router, prefix='/api/v1')
+app.include_router(authentification_manager_router, prefix='/v1/api')
+app.include_router(iam_manager_router, prefix='/v1/api')
+app.include_router(service_test_router, prefix='/v1/api')
+app.include_router(product_manager_router, prefix='/v1/api')
+app.include_router(stock_manager_router, prefix='/v1/api')
+app.include_router(organization_manager_router, prefix='/v1/api')
+app.include_router(user_manager_router, prefix='/v1/api')
+
 
 

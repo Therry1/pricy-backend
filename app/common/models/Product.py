@@ -19,21 +19,28 @@ class Product(Base):
     
     # Dates critiques
     expiration_date = Column(DateTime)
-    supply_threshold = Column(Integer , nullable=False)
-    supply_threshold = Column(Integer , nullable=False)
-    critical_threshold = Column(Integer , nullable=False)
+    supply_threshold = Column(Integer , nullable=True)
+    critical_threshold = Column(Integer , nullable=True)
     
     # Conservation & Physique
+    unit_measure = Column(String(10), nullable=False)
     weight_unit = Column(String(10), default="kg")
     storage_instructions = Column(String(255)) # ex: "Keep refrigerated"
     
     # Commercial
-    unit_price = Column(Float, nullable=False)
+    purchase_unit_price = Column(Float, nullable=True)
+    salling_unit_price = Column(Float, nullable=True)
+    
+    #condition 
+    is_sallable = Column(Boolean, default=False)
+    is_kit = Column(Boolean, default=False)
+    
     status = Column(String(50), default="available") # available, recalled, out_of_stock
     state = Column(Integer , default=1)
     # Relation
+    packagings_id = Column(JSON)
     organization_id = Column(UUID(as_uuid=True), ForeignKey("organizations.id"))
-    packaging_id = Column(UUID(as_uuid=True), ForeignKey("product_packagings.id"))
+    #packaging_id = Column(UUID(as_uuid=True), ForeignKey("product_packagings.id"))
 
     # Audit
     created_at = Column(DateTime(timezone=True), server_default=func.now())

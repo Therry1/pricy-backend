@@ -1,1 +1,1 @@
-"""Constantes du module user_manager."""
+"""Constantes du module iam_manager."""

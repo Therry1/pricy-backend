@@ -1,8 +1,8 @@
-"""Send of first mgrations
+"""Ajout de packagings_id et measure_unit dans le model Product
 
-Revision ID: bd69fcb99cac
-Revises: 8939f2f87e2f
-Create Date: 2026-04-24 14:09:15.323768
+Revision ID: 5cc212f12473
+Revises: 
+Create Date: 2026-05-02 13:17:32.147739
 
 """
 from typing import Sequence, Union
@@ -12,8 +12,8 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = 'bd69fcb99cac'
-down_revision: Union[str, Sequence[str], None] = '8939f2f87e2f'
+revision: str = '5cc212f12473'
+down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
@@ -60,6 +60,13 @@ def upgrade() -> None:
     op.create_index(op.f('ix_organizations_id'), 'organizations', ['id'], unique=False)
     op.create_index(op.f('ix_organizations_slug'), 'organizations', ['slug'], unique=True)
     op.create_index(op.f('ix_organizations_tax_id'), 'organizations', ['tax_id'], unique=True)
+    op.create_table('test_models',
+    sa.Column('id', sa.UUID(), nullable=False),
+    sa.Column('created_at', sa.DateTime(), nullable=True),
+    sa.Column('updated_at', sa.DateTime(), nullable=True),
+    sa.Column('deleted_at', sa.DateTime(), nullable=True),
+    sa.PrimaryKeyConstraint('id')
+    )
     op.create_table('locations',
     sa.Column('id', sa.UUID(), nullable=False),
     sa.Column('name', sa.String(length=100), nullable=False),
@@ -98,6 +105,31 @@ def upgrade() -> None:
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('packaging_name')
     )
+    op.create_table('products',
+    sa.Column('id', sa.UUID(), nullable=False),
+    sa.Column('product_name', sa.String(length=255), nullable=False),
+    sa.Column('allergens', sa.JSON(), nullable=True),
+    sa.Column('nutrition_facts', sa.JSON(), nullable=True),
+    sa.Column('expiration_date', sa.DateTime(), nullable=True),
+    sa.Column('supply_threshold', sa.Integer(), nullable=False),
+    sa.Column('critical_threshold', sa.Integer(), nullable=False),
+    sa.Column('unit_measure', sa.String(length=10), nullable=False),
+    sa.Column('weight_unit', sa.String(length=10), nullable=True),
+    sa.Column('storage_instructions', sa.String(length=255), nullable=True),
+    sa.Column('purchase_unit_price', sa.Float(), nullable=False),
+    sa.Column('salling_unit_price', sa.Float(), nullable=False),
+    sa.Column('is_sallable', sa.Boolean(), nullable=True),
+    sa.Column('is_kit', sa.Boolean(), nullable=True),
+    sa.Column('status', sa.String(length=50), nullable=True),
+    sa.Column('state', sa.Integer(), nullable=True),
+    sa.Column('packagings_id', sa.JSON(), nullable=True),
+    sa.Column('organization_id', sa.UUID(), nullable=True),
+    sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=True),
+    sa.Column('updated_at', sa.DateTime(timezone=True), nullable=True),
+    sa.Column('deleted_at', sa.DateTime(timezone=True), nullable=True),
+    sa.ForeignKeyConstraint(['organization_id'], ['organizations.id'], ),
+    sa.PrimaryKeyConstraint('id')
+    )
     op.create_table('supplies',
     sa.Column('id', sa.UUID(), nullable=False),
     sa.Column('reference_number', sa.String(length=100), nullable=False),
@@ -121,7 +153,7 @@ def upgrade() -> None:
     sa.Column('id', sa.UUID(), nullable=False),
     sa.Column('username', sa.String(length=50), nullable=False),
     sa.Column('email', sa.String(length=150), nullable=False),
-    sa.Column('hashed_password', sa.String(length=255), nullable=False),
+    sa.Column('hashed_password', sa.Text(), nullable=False),
     sa.Column('is_active', sa.Boolean(), server_default='true', nullable=True),
     sa.Column('is_superuser', sa.Boolean(), server_default='false', nullable=True),
     sa.Column('first_name', sa.String(length=100), nullable=True),
@@ -165,28 +197,6 @@ def upgrade() -> None:
     )
     op.create_index(op.f('ix_warehouses_code'), 'warehouses', ['code'], unique=True)
     op.create_index(op.f('ix_warehouses_id'), 'warehouses', ['id'], unique=False)
-    op.create_table('products',
-    sa.Column('id', sa.UUID(), nullable=False),
-    sa.Column('product_name', sa.String(length=255), nullable=False),
-    sa.Column('allergens', sa.JSON(), nullable=True),
-    sa.Column('nutrition_facts', sa.JSON(), nullable=True),
-    sa.Column('expiration_date', sa.DateTime(), nullable=True),
-    sa.Column('supply_threshold', sa.Integer(), nullable=False),
-    sa.Column('critical_threshold', sa.Integer(), nullable=False),
-    sa.Column('weight_unit', sa.String(length=10), nullable=True),
-    sa.Column('storage_instructions', sa.String(length=255), nullable=True),
-    sa.Column('unit_price', sa.Float(), nullable=False),
-    sa.Column('status', sa.String(length=50), nullable=True),
-    sa.Column('state', sa.Integer(), nullable=True),
-    sa.Column('organization_id', sa.UUID(), nullable=True),
-    sa.Column('packaging_id', sa.UUID(), nullable=True),
-    sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=True),
-    sa.Column('updated_at', sa.DateTime(timezone=True), nullable=True),
-    sa.Column('deleted_at', sa.DateTime(timezone=True), nullable=True),
-    sa.ForeignKeyConstraint(['organization_id'], ['organizations.id'], ),
-    sa.ForeignKeyConstraint(['packaging_id'], ['product_packagings.id'], ),
-    sa.PrimaryKeyConstraint('id')
-    )
     op.create_table('product_catalogues',
     sa.Column('id', sa.UUID(), nullable=False),
     sa.Column('product_id', sa.UUID(), nullable=False),
@@ -283,7 +293,6 @@ def downgrade() -> None:
     op.drop_table('product_stocks')
     op.drop_index(op.f('ix_product_catalogues_id'), table_name='product_catalogues')
     op.drop_table('product_catalogues')
-    op.drop_table('products')
     op.drop_index(op.f('ix_warehouses_id'), table_name='warehouses')
     op.drop_index(op.f('ix_warehouses_code'), table_name='warehouses')
     op.drop_table('warehouses')
@@ -294,10 +303,12 @@ def downgrade() -> None:
     op.drop_index(op.f('ix_supplies_reference_number'), table_name='supplies')
     op.drop_index(op.f('ix_supplies_id'), table_name='supplies')
     op.drop_table('supplies')
+    op.drop_table('products')
     op.drop_table('product_packagings')
     op.drop_index(op.f('ix_locations_id'), table_name='locations')
     op.drop_index(op.f('ix_locations_code'), table_name='locations')
     op.drop_table('locations')
+    op.drop_table('test_models')
     op.drop_index(op.f('ix_organizations_tax_id'), table_name='organizations')
     op.drop_index(op.f('ix_organizations_slug'), table_name='organizations')
     op.drop_index(op.f('ix_organizations_id'), table_name='organizations')

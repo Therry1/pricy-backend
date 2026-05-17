@@ -23,6 +23,10 @@ class Settings(BaseSettings):
     REDIS_PASSWORD: str | None = None
 
     DATABASE_URL: Optional[str] = None  # ✅ Plus de doublon, None par défaut
+    
+    SECRET_KEY: str
+    ALGORITHM: str
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
 
     model_config = {"env_file": str(ENV_FILE), "env_file_encoding": "utf-8", "extra": "ignore"}
 

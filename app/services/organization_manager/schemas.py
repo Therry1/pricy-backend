@@ -121,6 +121,7 @@ class OrganizationUpdateSchema(BaseModel):
 
 class OrganizationResponseSchema(OrganizationBase):
     id: uuid.UUID
+    alias: str
     created_at: Optional[datetime]
     updated_at: Optional[datetime]
     deleted_at: Optional[datetime]
